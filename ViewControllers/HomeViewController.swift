@@ -17,26 +17,39 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        title = "Accounts"
+        self.navigationController?.navigationBar.isHidden = true
         setupLayout()
         loadCards()
     }
 
     private func setupLayout() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: logoutButton)
+        let header = UIView()
+        header.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(header)
+
+        let titleLabel = UILabel()
+        titleLabel.text = "Accounts"
+        titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        logoutButton.setImage(UIImage(systemName: "power"), for: .normal)
+        logoutButton.tintColor = .label
         logoutButton.addTarget(self, action: #selector(logoutTapped), for: .touchUpInside)
 
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.dataSource = self
-        tableView.register(CardCell.self, forCellReuseIdentifier: "CardCell")
-        tableView.tableFooterView = UIView()
-        view.addSubview(tableView)
+        header.addSubview(titleLabel)
+        header.addSubview(logoutButton)
 
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            header.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
+            header.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            header.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            header.heightAnchor.constraint(equalToConstant: 40),
+
+            titleLabel.leadingAnchor.constraint(equalTo: header.leadingAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: header.centerYAnchor),
+
+            logoutButton.trailingAnchor.constraint(equalTo: header.trailingAnchor),
+            logoutButton.centerYAnchor.constraint(equalTo: header.centerYAnchor)
         ])
     }
 
@@ -47,10 +60,18 @@ class HomeViewController: UIViewController {
     }
 
     @objc private func logoutTapped() {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.windows
-            .first?.rootViewController = UINavigationController(rootViewController: WelcomeViewController())
+        let alert = UIAlertController(title: "Odjava", message: "Jeste li sigurni da se želite odjaviti?", preferredStyle: .alert)
+
+        alert.addAction(UIAlertAction(title: "Ne", style: .cancel, handler: nil))
+
+        alert.addAction(UIAlertAction(title: "Da, odjavi me", style: .destructive, handler: { _ in
+            UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first?.windows
+                .first?.rootViewController = UINavigationController(rootViewController: WelcomeViewController())
+        }))
+
+        present(alert, animated: true)
     }
 }
 

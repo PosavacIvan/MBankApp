@@ -94,7 +94,7 @@ class LoginViewController: UIViewController {
             }
         }
         
-        loginButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
+        loginButton.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
     }
     
     @objc private func loginTapped() {
@@ -102,8 +102,8 @@ class LoginViewController: UIViewController {
             if let user = try DatabaseManager.shared.fetchUser(),
                enteredPIN == user.pin {
                 print("✅ PIN is correct, login success")
-                let homeVC = HomeViewController()
-                navigationController?.setViewControllers([homeVC], animated: true)
+                let tabBar = MainTabBarController()
+                navigationController?.setViewControllers([tabBar], animated: true)
             } else {
                 print("❌ Pogrešan PIN")
 
@@ -133,4 +133,17 @@ class LoginViewController: UIViewController {
         present(alert, animated: true)
     }
     
+    @objc private func handleLogin() {
+        guard let user = DatabaseManager.shared.login(with: enteredPIN) else {
+            print("❌ Pogrešan PIN")
+            return
+        }
+
+        UserDefaults.standard.set(user.id, forKey: "loggedInUserId")
+
+        let tabBarVC = MainTabBarController()
+        tabBarVC.modalPresentationStyle = .fullScreen
+        self.view.window?.rootViewController = tabBarVC
+        self.view.window?.makeKeyAndVisible()
+    }
 }

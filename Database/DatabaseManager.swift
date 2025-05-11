@@ -74,4 +74,57 @@ class DatabaseManager {
     func deleteAllUsers() throws {
         try db?.run(users.delete())
     }
+    
+    func login(with pinInput: String) -> User? {
+        do {
+            let query = users.filter(pin == pinInput)
+            if let row = try db?.pluck(query) {
+                return User(
+                    id: row[id],
+                    ime: row[ime],
+                    prezime: row[prezime],
+                    adresa: row[adresa],
+                    pin: row[pin]
+                )
+            }
+        } catch {
+            print("❌ Greška prilikom prijave: \(error)")
+        }
+        return nil
+    }
+    
+    func getUserCards() -> [BankCard] {
+        var cards: [BankCard] = []
+        
+        let cardsTable = Table("Cards")
+        let name = Expression<String>("name")
+        let iban = Expression<String>("iban")
+        let balance = Expression<Double>("balance")
+        let userId = Expression<Int64>("userId")
+        
+        guard let currentUserId = getCurrentUserId(),
+              let db = db else { return [] }
+
+        do {
+            let query = cardsTable.filter(userId == currentUserId)
+            for card in try db.prepare(query) {
+                let bankCard = BankCard(
+                    name: card[name],
+                    iban: card[iban],
+                    balance: card[balance]
+                )
+                cards.append(bankCard)
+            }
+        } catch {
+            print("❌ Greška pri dohvaćanju kartica: \(error)")
+        }
+
+        return cards
+    }
+    
+    private func getCurrentUserId() -> Int64? {
+        // Ovo pretpostavlja da si negdje prilikom prijave spremio korisnikov ID
+        return UserDefaults.standard.value(forKey: "loggedInUserId") as? Int64
+    }
+
 }
