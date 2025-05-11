@@ -38,8 +38,27 @@ class SplashViewController: UIViewController {
     }
 
     private func goToHome() {
-        let welcomeVC = WelcomeViewController()
-        let navVC = UINavigationController(rootViewController: welcomeVC)
+        let nextVC: UIViewController
+
+        let didRegister = UserDefaults.standard.bool(forKey: "didRegisterUser")
+        let user = try? DatabaseManager.shared.fetchUser()
+
+        print("🧠 didRegister =", didRegister)
+        print("🧠 user exists =", user != nil)
+
+        if didRegister && user == nil {
+            // Samo ako je svježa registracija i još nije spremljen korisnik
+            nextVC = WelcomeViewController()
+        } else if user != nil {
+            nextVC = LoginViewController()
+        } else {
+            nextVC = WelcomeViewController()
+        }
+
+        // Resetiraj flag jer je welcome prikazan
+        UserDefaults.standard.set(false, forKey: "didRegisterUser")
+
+        let navVC = UINavigationController(rootViewController: nextVC)
 
         if let windowScene = view.window?.windowScene,
            let window = windowScene.windows.first {
@@ -50,4 +69,6 @@ class SplashViewController: UIViewController {
                               animations: nil)
         }
     }
+
 }
+

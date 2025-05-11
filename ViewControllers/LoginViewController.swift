@@ -8,7 +8,7 @@
 import UIKit
 
 class LoginViewController: UIViewController {
-
+    
     private let pinLabel: UILabel = {
         let label = UILabel()
         label.text = "Unesite svoj PIN"
@@ -17,68 +17,66 @@ class LoginViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-
-    private let pinDisplayLabel: UILabel = {
-        let label = UILabel()
-        label.text = "●●●●"
-        label.font = UIFont.monospacedDigitSystemFont(ofSize: 32, weight: .bold)
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    
+    private let pinIndicatorView: PinIndicatorView = {
+        let view = PinIndicatorView()
+        view.totalDots = 4
+        view.filledCount = 0
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
-
+    
     private let keypad = KeypadView()
     
     private let loginButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Prijavi se u mBanking", for: .normal)
-        button.setTitleColor(.darkGray, for: .normal)
-        button.backgroundColor = .systemYellow
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .systemBlue
         button.layer.cornerRadius = 20
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-
+    
     private var enteredPIN = "" {
         didSet {
-            let bullets = String(repeating: "●", count: enteredPIN.count)
-            let padded = bullets.padding(toLength: 4, withPad: "○", startingAt: 0)
-            pinDisplayLabel.text = padded
+            pinIndicatorView.filledCount = enteredPIN.count
         }
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupLayout()
         setupActions()
     }
-
+    
     private func setupLayout() {
         view.addSubview(pinLabel)
-        view.addSubview(pinDisplayLabel)
+        view.addSubview(pinIndicatorView)
         view.addSubview(keypad)
         view.addSubview(loginButton)
-
+        
         NSLayoutConstraint.activate([
             pinLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
             pinLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-
-            pinDisplayLabel.topAnchor.constraint(equalTo: pinLabel.bottomAnchor, constant: 16),
-            pinDisplayLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-
+            
+            pinIndicatorView.topAnchor.constraint(equalTo: pinLabel.bottomAnchor, constant: 24),
+            pinIndicatorView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            pinIndicatorView.heightAnchor.constraint(equalToConstant: 30),
+            
             keypad.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            keypad.topAnchor.constraint(equalTo: pinDisplayLabel.bottomAnchor, constant: 40),
+            keypad.topAnchor.constraint(equalTo: pinIndicatorView.bottomAnchor, constant: 40),
             keypad.widthAnchor.constraint(equalToConstant: 260),
             keypad.heightAnchor.constraint(equalToConstant: 360),
-
+            
             loginButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
             loginButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             loginButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             loginButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
-
+    
     private func setupActions() {
         keypad.onKeyPressed = { [weak self] key in
             guard let self = self else { return }
@@ -92,18 +90,47 @@ class LoginViewController: UIViewController {
                     self.enteredPIN.removeLast()
                 }
             case .biometric:
-                print("🔐 Face ID tapped") // dodaj FaceID autentikaciju kasnije
+                print("🔐 Face ID tapped") // kasnije dodati autentikaciju
             }
         }
-
+        
         loginButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
     }
-
+    
     @objc private func loginTapped() {
-        if enteredPIN == "1234" {
-            print("✅ PIN is correct, login success")
-        } else {
-            print("❌ Pogrešan PIN")
+        do {
+            if let user = try DatabaseManager.shared.fetchUser(),
+               enteredPIN == user.pin {
+                print("✅ PIN is correct, login success")
+                let homeVC = HomeViewController()
+                navigationController?.setViewControllers([homeVC], animated: true)
+            } else {
+                print("❌ Pogrešan PIN")
+
+                // 🔃 Shake animacija
+                pinIndicatorView.shake()
+
+                // 📳 Haptika
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.error)
+
+                // ❗️ Alert + reset PIN-a
+                showAlert(message: "PIN nije točan.") { [weak self] in
+                    self?.enteredPIN = ""
+                }
+            }
+        } catch {
+            print("❌ Greška pri dohvaćanju korisnika: \(error)")
+            showAlert(message: "Došlo je do greške.")
         }
     }
+
+    private func showAlert(message: String, onDismiss: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: "Greška", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "U redu", style: .default) { _ in
+            onDismiss?()
+        })
+        present(alert, animated: true)
+    }
+    
 }

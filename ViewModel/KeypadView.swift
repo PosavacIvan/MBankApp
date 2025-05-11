@@ -1,10 +1,3 @@
-//
-//  KeypadView.swift
-//  MBankApp
-//
-//  Created by Ivan Posavac on 05.05.2025..
-//
-
 import UIKit
 
 enum KeypadKey {
@@ -37,7 +30,8 @@ class KeypadView: UIView {
     private func setupLayout() {
         let mainStack = UIStackView()
         mainStack.axis = .vertical
-        mainStack.spacing = 12
+        mainStack.spacing = 16
+        mainStack.alignment = .center
         mainStack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(mainStack)
 
@@ -51,28 +45,28 @@ class KeypadView: UIView {
         for row in buttons {
             let rowStack = UIStackView()
             rowStack.axis = .horizontal
-            rowStack.spacing = 12
-            rowStack.distribution = .fillEqually
+            rowStack.spacing = 16
+            rowStack.distribution = .equalSpacing
+            rowStack.alignment = .center
 
             for key in row {
                 let button = UIButton(type: .system)
-                button.layer.cornerRadius = 30
+                button.translatesAutoresizingMaskIntoConstraints = false
+                button.widthAnchor.constraint(equalToConstant: 70).isActive = true
+                button.heightAnchor.constraint(equalToConstant: 70).isActive = true
                 button.backgroundColor = .systemGray6
                 button.tintColor = .label
-                button.titleLabel?.font = .systemFont(ofSize: 20, weight: .medium)
-                button.translatesAutoresizingMaskIntoConstraints = false
-                button.heightAnchor.constraint(equalToConstant: 60).isActive = true
+                button.layer.cornerRadius = 35
+                button.titleLabel?.font = .systemFont(ofSize: 22, weight: .medium)
 
                 switch key {
                 case .number(let value):
                     button.setTitle(value, for: .normal)
                 case .delete:
-                    let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)
-                    let icon = UIImage(systemName: "delete.left", withConfiguration: config)
+                    let icon = UIImage(systemName: "delete.left", withConfiguration: UIImage.SymbolConfiguration(pointSize: 22, weight: .medium))
                     button.setImage(icon, for: .normal)
                 case .biometric:
-                    let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)
-                    let icon = UIImage(systemName: "faceid", withConfiguration: config)
+                    let icon = UIImage(systemName: "faceid", withConfiguration: UIImage.SymbolConfiguration(pointSize: 22, weight: .medium))
                     button.setImage(icon, for: .normal)
                 }
 
@@ -87,3 +81,4 @@ class KeypadView: UIView {
         }
     }
 }
+

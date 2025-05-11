@@ -5,16 +5,15 @@
 //  Created by Ivan Posavac on 05.05.2025..
 //
 
-import Foundation
+import UIKit
 
 class WelcomeViewModel {
-    func loginTapped() {
-        print("Login button tapped")
-        // ovdje dodaj navigaciju ili logiku kasnije
-    }
+
+    weak var viewController: UIViewController?
 
     func registerTapped() {
-        print("Register button tapped")
-        // ovdje dodaj navigaciju ili logiku kasnije
+        let registerVC = RegisterViewController()
+        viewController?.navigationController?.pushViewController(registerVC, animated: true)
     }
 }
+

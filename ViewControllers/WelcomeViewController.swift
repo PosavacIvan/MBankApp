@@ -24,16 +24,6 @@ class WelcomeViewController: UIViewController {
         return label
     }()
 
-    private let loginButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Login", for: .normal)
-        button.backgroundColor = .systemBlue
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 8
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-
     private let registerButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Register", for: .normal)
@@ -44,18 +34,10 @@ class WelcomeViewController: UIViewController {
         return button
     }()
 
-    private lazy var buttonStackView: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [loginButton, registerButton])
-        stack.axis = .vertical
-        stack.spacing = 30
-        stack.distribution = .fillEqually
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
-    }()
-
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        viewModel.viewController = self
         setupLayout()
         setupActions()
         animateContent()
@@ -64,7 +46,7 @@ class WelcomeViewController: UIViewController {
     private func setupLayout() {
         view.addSubview(titleLabel)
         view.addSubview(subtitleLabel)
-        view.addSubview(buttonStackView)
+        view.addSubview(registerButton)
 
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -73,18 +55,14 @@ class WelcomeViewController: UIViewController {
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
             subtitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
-            loginButton.heightAnchor.constraint(equalToConstant: 44),
-            registerButton.heightAnchor.constraint(equalToConstant: 44),
-
-            buttonStackView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 60),
-            buttonStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            buttonStackView.widthAnchor.constraint(equalToConstant: 200)
-
+            registerButton.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 60),
+            registerButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            registerButton.widthAnchor.constraint(equalToConstant: 200),
+            registerButton.heightAnchor.constraint(equalToConstant: 44)
         ])
     }
 
     private func setupActions() {
-        loginButton.addTarget(self, action: #selector(didTapLogin), for: .touchUpInside)
         registerButton.addTarget(self, action: #selector(didTapRegister), for: .touchUpInside)
     }
 
@@ -96,11 +74,8 @@ class WelcomeViewController: UIViewController {
         }
     }
 
-    @objc private func didTapLogin() {
-        viewModel.loginTapped()
-    }
-
     @objc private func didTapRegister() {
         viewModel.registerTapped()
     }
 }
+

@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		59382EA32DCA7B2E00C42296 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = 59382EA22DCA7B2E00C42296 /* SQLite */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		59441ECD2DC80E9C00906A3C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,9 +28,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		59441EB62DC80E9A00906A3C /* MBankApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = MBankApp.app; path = "/Users/ivanposavac/Documents/Diplomski/MBankApp/build/Debug-iphoneos/MBankApp.app"; sourceTree = "<absolute>"; };
-		59441ECC2DC80E9C00906A3C /* MBankAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MBankAppTests.xctest; path = "/Users/ivanposavac/Documents/Diplomski/MBankApp/build/Debug-iphoneos/MBankApp.app/PlugIns/MBankAppTests.xctest"; sourceTree = "<absolute>"; };
-		59441ED62DC80E9C00906A3C /* MBankAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MBankAppUITests.xctest; path = "/Users/ivanposavac/Documents/Diplomski/MBankApp/build/Debug-iphoneos/MBankAppUITests-Runner.app/PlugIns/MBankAppUITests.xctest"; sourceTree = "<absolute>"; };
+		59382E802DCA6DDD00C42296 /* MBankApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MBankApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		59382E812DCA6DDD00C42296 /* MBankAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MBankAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		59382E822DCA6DDD00C42296 /* MBankAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MBankAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -40,12 +44,32 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		59382E9C2DCA718700C42296 /* Database */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Database;
+			sourceTree = "<group>";
+		};
+		59382EA42DCA7BBA00C42296 /* Models */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Models;
+			sourceTree = "<group>";
+		};
+		59382EA82DCA7CB200C42296 /* Helpers */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		59441EB82DC80E9A00906A3C /* MBankApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				59441EDE2DC80E9C00906A3C /* Exceptions for "MBankApp" folder in "MBankApp" target */,
 			);
 			path = MBankApp;
+			sourceTree = "<group>";
+		};
+		59930CAA2DD098FF00E2BD14 /* Extensions */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		59CC72012DC90C9600F50D18 /* ViewControllers */ = {
@@ -65,6 +89,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				59382EA32DCA7B2E00C42296 /* SQLite in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,12 +110,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		59382EA12DCA7B2E00C42296 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		59441EAD2DC80E9A00906A3C = {
 			isa = PBXGroup;
 			children = (
+				59930CAA2DD098FF00E2BD14 /* Extensions */,
+				59382EA82DCA7CB200C42296 /* Helpers */,
+				59382EA42DCA7BBA00C42296 /* Models */,
+				59382E9C2DCA718700C42296 /* Database */,
 				59441EB82DC80E9A00906A3C /* MBankApp */,
 				59CC72062DC90D8C00F50D18 /* ViewModel */,
 				59CC72012DC90C9600F50D18 /* ViewControllers */,
+				59382E802DCA6DDD00C42296 /* MBankApp.app */,
+				59382E812DCA6DDD00C42296 /* MBankAppTests.xctest */,
+				59382E822DCA6DDD00C42296 /* MBankAppUITests.xctest */,
+				59382EA12DCA7B2E00C42296 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -110,15 +150,20 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				59382E9C2DCA718700C42296 /* Database */,
+				59382EA42DCA7BBA00C42296 /* Models */,
+				59382EA82DCA7CB200C42296 /* Helpers */,
 				59441EB82DC80E9A00906A3C /* MBankApp */,
+				59930CAA2DD098FF00E2BD14 /* Extensions */,
 				59CC72012DC90C9600F50D18 /* ViewControllers */,
 				59CC72062DC90D8C00F50D18 /* ViewModel */,
 			);
 			name = MBankApp;
 			packageProductDependencies = (
+				59382EA22DCA7B2E00C42296 /* SQLite */,
 			);
 			productName = MBankApp;
-			productReference = 59441EB62DC80E9A00906A3C /* MBankApp.app */;
+			productReference = 59382E802DCA6DDD00C42296 /* MBankApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 		59441ECB2DC80E9C00906A3C /* MBankAppTests */ = {
@@ -138,7 +183,7 @@
 			packageProductDependencies = (
 			);
 			productName = MBankAppTests;
-			productReference = 59441ECC2DC80E9C00906A3C /* MBankAppTests.xctest */;
+			productReference = 59382E812DCA6DDD00C42296 /* MBankAppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		59441ED52DC80E9C00906A3C /* MBankAppUITests */ = {
@@ -158,7 +203,7 @@
 			packageProductDependencies = (
 			);
 			productName = MBankAppUITests;
-			productReference = 59441ED62DC80E9C00906A3C /* MBankAppUITests.xctest */;
+			productReference = 59382E822DCA6DDD00C42296 /* MBankAppUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -193,6 +238,9 @@
 			);
 			mainGroup = 59441EAD2DC80E9A00906A3C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				59382EA02DCA78ED00C42296 /* XCRemoteSwiftPackageReference "SQLite" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 59441EAD2DC80E9A00906A3C;
 			projectDirPath = "";
@@ -546,6 +594,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		59382EA02DCA78ED00C42296 /* XCRemoteSwiftPackageReference "SQLite" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephencelis/SQLite.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.15.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		59382EA22DCA7B2E00C42296 /* SQLite */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 59382EA02DCA78ED00C42296 /* XCRemoteSwiftPackageReference "SQLite" */;
+			productName = SQLite;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 59441EAE2DC80E9A00906A3C /* Project object */;
 }
