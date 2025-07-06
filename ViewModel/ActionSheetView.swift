@@ -149,8 +149,8 @@ class ActionSheetView: UIView {
             guard let label = (view.subviews.first as? UIStackView)?.arrangedSubviews.last as? UILabel else { continue }
 
             if label.text == "Dodaj karticu" {
-                view.isUserInteractionEnabled = count == 0
-                view.alpha = count == 0 ? 1.0 : 0.4
+                view.isUserInteractionEnabled = true
+                view.alpha = 1.0
             }
             else if label.text == "Vlastiti prijenos" {
                 view.isUserInteractionEnabled = count >= 2

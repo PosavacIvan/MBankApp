@@ -11,10 +11,15 @@ import Foundation
 class DatabaseManager {
     static let shared = DatabaseManager()
     private var db: Connection?
-    
-    let dbPath = "/Users/ivanposavac/Documents/Diplomski/Database/MBankApp.sqlite"
 
-    // Tablica i polja
+    // MARK: - Baza put
+    let dbPath: String = {
+        let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = urls[0]
+        return documentsDirectory.appendingPathComponent("MBankApp.sqlite").path
+    }()
+
+    // MARK: - Tablice i polja
     private let users = Table("User")
     private let id = Expression<Int64>("id")
     private let ime = Expression<String>("ime")
@@ -22,8 +27,24 @@ class DatabaseManager {
     private let adresa = Expression<String>("adresa")
     private let pin = Expression<String>("pin")
 
+    // Polja za kartice
+    private let cards = Table("Cards")
+    private let name = Expression<String>("name")
+    private let iban = Expression<String>("iban")
+    private let balance = Expression<Double>("balance")
+    private let userId = Expression<Int64>("userId")
+    private let color = Expression<String>("color")
+    
+    private let transactions = Table("Transactions")
+    private let transId = Expression<Int64>("id")
+    private let transAmount = Expression<Double>("amount")
+    private let transDate = Expression<String>("date")
+    private let transDescription = Expression<String>("description")
+    private let transCardId = Expression<Int64>("cardId")
+
+
+    // MARK: - Init
     private init() {
-        let dbPath = "/Users/ivanposavac/Documents/Diplomski/Database/MBankApp.sqlite"
         print("📂 Baza spremljena ovdje: \(dbPath)")
 
         do {
@@ -34,6 +55,7 @@ class DatabaseManager {
         }
     }
 
+    // MARK: - Tablice
     private func createTables() {
         do {
             try db?.run(users.create(ifNotExists: true) { t in
@@ -43,11 +65,29 @@ class DatabaseManager {
                 t.column(adresa)
                 t.column(pin)
             })
+
+            try db?.run(cards.create(ifNotExists: true) { t in
+                t.column(name)
+                t.column(iban, unique: true)
+                t.column(balance)
+                t.column(userId)
+                t.column(color)
+            })
+            
+            try db?.run(transactions.create(ifNotExists: true) { t in
+                t.column(transId, primaryKey: .autoincrement)
+                t.column(transAmount)
+                t.column(transDate)
+                t.column(transDescription)
+                t.column(transCardId)
+            })
+
         } catch {
             print("❌ Greška pri kreiranju tablica: \(error)")
         }
     }
 
+    // MARK: - Korisnici
     func insertUser(_ user: User) throws {
         let insert = users.insert(
             ime <- user.ime,
@@ -74,7 +114,7 @@ class DatabaseManager {
     func deleteAllUsers() throws {
         try db?.run(users.delete())
     }
-    
+
     func login(with pinInput: String) -> User? {
         do {
             let query = users.filter(pin == pinInput)
@@ -92,39 +132,79 @@ class DatabaseManager {
         }
         return nil
     }
-    
+
+    // MARK: - Kartice
+
+    func insertCard(_ card: BankCard) throws {
+        guard let currentUserId = getCurrentUserId() else { return }
+
+        let insert = cards.insert(
+            name <- card.name,
+            iban <- card.iban,
+            balance <- card.balance,
+            userId <- currentUserId,
+            color <- card.color
+        )
+        try db?.run(insert)
+    }
+
     func getUserCards() -> [BankCard] {
-        var cards: [BankCard] = []
-        
-        let cardsTable = Table("Cards")
-        let name = Expression<String>("name")
-        let iban = Expression<String>("iban")
-        let balance = Expression<Double>("balance")
-        let userId = Expression<Int64>("userId")
-        
+        var cardList: [BankCard] = []
+
         guard let currentUserId = getCurrentUserId(),
               let db = db else { return [] }
 
         do {
-            let query = cardsTable.filter(userId == currentUserId)
+            let query = cards.filter(userId == currentUserId)
             for card in try db.prepare(query) {
                 let bankCard = BankCard(
                     name: card[name],
                     iban: card[iban],
-                    balance: card[balance]
+                    balance: card[balance],
+                    color: card[color]
                 )
-                cards.append(bankCard)
+                cardList.append(bankCard)
             }
         } catch {
             print("❌ Greška pri dohvaćanju kartica: \(error)")
         }
 
-        return cards
+        return cardList
+    }
+
+    private func getCurrentUserId() -> Int64? {
+        return UserDefaults.standard.value(forKey: "loggedInUserId") as? Int64
     }
     
-    private func getCurrentUserId() -> Int64? {
-        // Ovo pretpostavlja da si negdje prilikom prijave spremio korisnikov ID
-        return UserDefaults.standard.value(forKey: "loggedInUserId") as? Int64
+    func insertTransaction(amount: Double, date: String, description: String, cardId: Int64) throws {
+        let insert = transactions.insert(
+            transAmount <- amount,
+            transDate <- date,
+            transDescription <- description,
+            transCardId <- cardId
+        )
+        try db?.run(insert)
+    }
+    
+    func getTransactions(forCardId id: Int64) -> [Transaction] {
+        var result: [Transaction] = []
+
+        do {
+            let query = transactions.filter(transCardId == id)
+            for row in try db!.prepare(query) {
+                result.append(Transaction(
+                    id: row[transId],
+                    amount: row[transAmount],
+                    date: row[transDate],
+                    description: row[transDescription],
+                    cardId: row[transCardId]
+                ))
+            }
+        } catch {
+            print("❌ Greška pri dohvaćanju transakcija: \(error)")
+        }
+
+        return result
     }
 
 }

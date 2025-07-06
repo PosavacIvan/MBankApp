@@ -21,6 +21,7 @@ class MainTabBarController: UITabBarController {
         let settingsVC = UIViewController()
         settingsVC.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(systemName: "gear"), tag: 2)
 
+
         viewControllers = [
             UINavigationController(rootViewController: homeVC),
             actionVC,

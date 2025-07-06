@@ -2,89 +2,67 @@ import UIKit
 
 class HomeViewController: UIViewController {
 
-    private var cards: [BankCard] = [] // kartice učitane iz baze
-
-    private let tableView = UITableView(frame: .zero, style: .plain)
-
-    private let logoutButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "power"), for: .normal)
-        button.tintColor = .label
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
+    private let scrollView = UIScrollView()
+    private let stackView = UIStackView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "Moje kartice"
         view.backgroundColor = .systemBackground
-        self.navigationController?.navigationBar.isHidden = true
         setupLayout()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         loadCards()
     }
 
     private func setupLayout() {
-        let header = UIView()
-        header.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(header)
-
-        let titleLabel = UILabel()
-        titleLabel.text = "Accounts"
-        titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        logoutButton.setImage(UIImage(systemName: "power"), for: .normal)
-        logoutButton.tintColor = .label
-        logoutButton.addTarget(self, action: #selector(logoutTapped), for: .touchUpInside)
-
-        header.addSubview(titleLabel)
-        header.addSubview(logoutButton)
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(scrollView)
 
         NSLayoutConstraint.activate([
-            header.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
-            header.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            header.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            header.heightAnchor.constraint(equalToConstant: 40),
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
 
-            titleLabel.leadingAnchor.constraint(equalTo: header.leadingAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: header.centerYAnchor),
+        stackView.axis = .vertical
+        stackView.spacing = 20
+        stackView.alignment = .fill
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(stackView)
 
-            logoutButton.trailingAnchor.constraint(equalTo: header.trailingAnchor),
-            logoutButton.centerYAnchor.constraint(equalTo: header.centerYAnchor)
+        NSLayoutConstraint.activate([
+            stackView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 20),
+            stackView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 20),
+            stackView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -20),
+            stackView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -20),
+            stackView.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -40)
         ])
     }
 
     private func loadCards() {
-        // Za sada prazno, kasnije dohvati iz baze
-        cards = [] // ako je prazno, prikazat će se prazan ekran
-        tableView.reloadData()
-    }
+        // Ukloni stare kartice iz stacka
+        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
-    @objc private func logoutTapped() {
-        let alert = UIAlertController(title: "Odjava", message: "Jeste li sigurni da se želite odjaviti?", preferredStyle: .alert)
+        let cards = DatabaseManager.shared.getUserCards()
 
-        alert.addAction(UIAlertAction(title: "Ne", style: .cancel, handler: nil))
-
-        alert.addAction(UIAlertAction(title: "Da, odjavi me", style: .destructive, handler: { _ in
-            UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene }
-                .first?.windows
-                .first?.rootViewController = UINavigationController(rootViewController: WelcomeViewController())
-        }))
-
-        present(alert, animated: true)
-    }
-}
-
-extension HomeViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        cards.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CardCell", for: indexPath) as? CardCell else {
-            return UITableViewCell()
+        if cards.isEmpty {
+            let emptyLabel = UILabel()
+            emptyLabel.text = "Nemate dodanih kartica."
+            emptyLabel.textAlignment = .center
+            emptyLabel.font = .systemFont(ofSize: 18)
+            emptyLabel.textColor = .secondaryLabel
+            stackView.addArrangedSubview(emptyLabel)
+        } else {
+            for card in cards {
+                let cardView = CardView(card: card)
+                cardView.heightAnchor.constraint(equalToConstant: 160).isActive = true
+                stackView.addArrangedSubview(cardView)
+            }
         }
-        cell.configure(with: cards[indexPath.row])
-        return cell
     }
 }
+

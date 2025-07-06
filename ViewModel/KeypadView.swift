@@ -31,7 +31,7 @@ class KeypadView: UIView {
         let mainStack = UIStackView()
         mainStack.axis = .vertical
         mainStack.spacing = 16
-        mainStack.alignment = .center
+        mainStack.alignment = .fill
         mainStack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(mainStack)
 
@@ -46,8 +46,8 @@ class KeypadView: UIView {
             let rowStack = UIStackView()
             rowStack.axis = .horizontal
             rowStack.spacing = 16
-            rowStack.distribution = .equalSpacing
-            rowStack.alignment = .center
+            rowStack.distribution = .fillEqually
+            rowStack.alignment = .fill
 
             for key in row {
                 let button = UIButton(type: .system)
@@ -81,4 +81,3 @@ class KeypadView: UIView {
         }
     }
 }
-
