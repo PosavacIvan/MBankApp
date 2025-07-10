@@ -18,14 +18,13 @@ class MainTabBarController: UITabBarController {
         let actionVC = UIViewController()
         actionVC.tabBarItem = UITabBarItem()
 
-        let settingsVC = UIViewController()
+        let settingsVC = SettingsViewController()
         settingsVC.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(systemName: "gear"), tag: 2)
-
 
         viewControllers = [
             UINavigationController(rootViewController: homeVC),
             actionVC,
-            settingsVC
+            UINavigationController(rootViewController: settingsVC)
         ]
 
         tabBar.tintColor = .systemBlue

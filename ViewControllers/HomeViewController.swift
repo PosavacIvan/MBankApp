@@ -1,3 +1,4 @@
+
 import UIKit
 
 class HomeViewController: UIViewController {
@@ -57,12 +58,31 @@ class HomeViewController: UIViewController {
             emptyLabel.textColor = .secondaryLabel
             stackView.addArrangedSubview(emptyLabel)
         } else {
-            for card in cards {
+            for (index, card) in cards.enumerated() {
                 let cardView = CardView(card: card)
                 cardView.heightAnchor.constraint(equalToConstant: 160).isActive = true
+                cardView.tag = index
+
+                // Dodaj tap gesture
+                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCardTap(_:)))
+                cardView.isUserInteractionEnabled = true
+                cardView.addGestureRecognizer(tapGesture)
+
                 stackView.addArrangedSubview(cardView)
             }
         }
+    }
+
+    @objc private func handleCardTap(_ gesture: UITapGestureRecognizer) {
+        guard let tappedView = gesture.view else { return }
+
+        let cards = DatabaseManager.shared.getUserCards()
+        let index = tappedView.tag
+        guard index < cards.count else { return }
+
+        let selectedCard = cards[index]
+        let vc = TransactionHistoryViewController(card: selectedCard)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

@@ -36,11 +36,12 @@ class DatabaseManager {
     private let color = Expression<String>("color")
     
     private let transactions = Table("Transactions")
-    private let transId = Expression<Int64>("id")
-    private let transAmount = Expression<Double>("amount")
-    private let transDate = Expression<String>("date")
-    private let transDescription = Expression<String>("description")
-    private let transCardId = Expression<Int64>("cardId")
+    private let transactionId = Expression<Int64>("id")
+    private let transactionTitle = Expression<String>("title")
+    private let transactionAmount = Expression<Double>("amount")
+    private let transactionDate = Expression<String>("date")
+    private let transactionCardIban = Expression<String>("cardIban")
+
 
 
     // MARK: - Init
@@ -75,12 +76,13 @@ class DatabaseManager {
             })
             
             try db?.run(transactions.create(ifNotExists: true) { t in
-                t.column(transId, primaryKey: .autoincrement)
-                t.column(transAmount)
-                t.column(transDate)
-                t.column(transDescription)
-                t.column(transCardId)
+                t.column(transactionId, primaryKey: .autoincrement)
+                t.column(transactionTitle)
+                t.column(transactionAmount)
+                t.column(transactionDate)
+                t.column(transactionCardIban)
             })
+
 
         } catch {
             print("❌ Greška pri kreiranju tablica: \(error)")
@@ -132,6 +134,49 @@ class DatabaseManager {
         }
         return nil
     }
+    
+    func addTransaction(_ transaction: Transaction) {
+        let formatter = ISO8601DateFormatter()
+        let dateString = formatter.string(from: transaction.date)
+
+        let insert = transactions.insert(
+            transactionTitle <- transaction.title,
+            transactionAmount <- transaction.amount,
+            transactionDate <- dateString,
+            transactionCardIban <- transaction.cardIban
+        )
+
+        do {
+            try db?.run(insert)
+        } catch {
+            print("❌ Greška pri dodavanju transakcije: \(error)")
+        }
+    }
+    
+    func getTransactions(forIban iban: String) -> [Transaction] {
+        var list: [Transaction] = []
+        let formatter = ISO8601DateFormatter()
+
+        do {
+            let query = transactions.filter(transactionCardIban == iban)
+            for row in try db!.prepare(query) {
+                let date = formatter.date(from: row[transactionDate]) ?? Date()
+                let tx = Transaction(
+                    id: row[transactionId],
+                    title: row[transactionTitle],
+                    amount: row[transactionAmount],
+                    date: date,
+                    cardIban: row[transactionCardIban]
+                )
+                list.append(tx)
+            }
+        } catch {
+            print("❌ Greška pri dohvaćanju transakcija: \(error)")
+        }
+
+        return list
+    }
+
 
     // MARK: - Kartice
 
@@ -176,28 +221,29 @@ class DatabaseManager {
         return UserDefaults.standard.value(forKey: "loggedInUserId") as? Int64
     }
     
-    func insertTransaction(amount: Double, date: String, description: String, cardId: Int64) throws {
+    func insertTransaction(title: String, amount: Double, date: String, cardIban: String) throws {
         let insert = transactions.insert(
-            transAmount <- amount,
-            transDate <- date,
-            transDescription <- description,
-            transCardId <- cardId
+            transactionTitle <- title,
+            transactionAmount <- amount,
+            transactionDate <- date,
+            transactionCardIban <- cardIban
         )
         try db?.run(insert)
     }
-    
-    func getTransactions(forCardId id: Int64) -> [Transaction] {
+
+    func getTransactions(forCardIban iban: String) -> [Transaction] {
         var result: [Transaction] = []
 
         do {
-            let query = transactions.filter(transCardId == id)
+            let query = transactions.filter(transactionCardIban == iban)
             for row in try db!.prepare(query) {
+                let parsedDate = ISO8601DateFormatter().date(from: row[transactionDate]) ?? Date()
                 result.append(Transaction(
-                    id: row[transId],
-                    amount: row[transAmount],
-                    date: row[transDate],
-                    description: row[transDescription],
-                    cardId: row[transCardId]
+                    id: row[transactionId],
+                    title: row[transactionTitle],
+                    amount: row[transactionAmount],
+                    date: parsedDate,
+                    cardIban: row[transactionCardIban]
                 ))
             }
         } catch {
@@ -205,6 +251,28 @@ class DatabaseManager {
         }
 
         return result
+    }
+    
+    func updateUserPin(newPin: String) {
+        guard let userId = getCurrentUserId() else { return }
+
+        let userToUpdate = users.filter(id == userId)
+        do {
+            try db?.run(userToUpdate.update(pin <- newPin))
+            print("✅ PIN ažuriran")
+        } catch {
+            print("❌ Greška pri ažuriranju PIN-a: \(error)")
+        }
+    }
+    
+    func deleteCard(withIban ibanToDelete: String) {
+        let query = cards.filter(iban == ibanToDelete)
+        do {
+            try db?.run(query.delete())
+            print("✅ Kartica obrisana.")
+        } catch {
+            print("❌ Greška pri brisanju kartice: \(error)")
+        }
     }
 
 }
