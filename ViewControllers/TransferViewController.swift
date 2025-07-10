@@ -1,20 +1,14 @@
-//
-//  TransferViewController.swift
-//  MBankApp
-//
-//  Created by Ivan Posavac on 10.07.2025..
-//
-
 import UIKit
 
-class TransferViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+class TransferViewController: UIViewController {
 
-    private let cards = DatabaseManager.shared.getUserCards()
-    private var selectedCard: BankCard?
+    private var cards = DatabaseManager.shared.getUserCards()
+    private var fromCard: BankCard?
+    private var toCard: BankCard?
 
-    private let cardPicker = UIPickerView()
-    private let balanceLabel = UILabel()
-    private let ibanField = UITextField()
+    private let fromPicker = UIPickerView()
+    private let toPicker = UIPickerView()
+
     private let amountField = UITextField()
     private let descriptionField = UITextField()
     private let sendButton = UIButton(type: .system)
@@ -24,62 +18,63 @@ class TransferViewController: UIViewController, UIPickerViewDataSource, UIPicker
         title = "Vlastiti prijenos"
         view.backgroundColor = .systemBackground
 
+        fromCard = cards.first
+        toCard = cards.count > 1 ? cards[1] : nil
+
         setupUI()
 
-        cardPicker.dataSource = self
-        cardPicker.delegate = self
-
-        selectedCard = cards.first
-        updateBalance()
+        fromPicker.delegate = self
+        fromPicker.dataSource = self
+        toPicker.delegate = self
+        toPicker.dataSource = self
     }
 
     private func setupUI() {
-        ibanField.placeholder = "IBAN primatelja"
+        let fromLabel = makeLabel("S koje kartice")
+        let toLabel = makeLabel("Na koju karticu")
+
         amountField.placeholder = "Iznos (€)"
+        amountField.borderStyle = .roundedRect
+        amountField.keyboardType = .decimalPad
+
         descriptionField.placeholder = "Opis transakcije"
-
-        [ibanField, amountField, descriptionField].forEach {
-            $0.borderStyle = .roundedRect
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview($0)
-        }
-
-        cardPicker.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(cardPicker)
-
-        balanceLabel.font = .systemFont(ofSize: 16)
-        balanceLabel.textColor = .secondaryLabel
-        balanceLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(balanceLabel)
+        descriptionField.borderStyle = .roundedRect
 
         sendButton.setTitle("Pošalji", for: .normal)
         sendButton.backgroundColor = .systemBlue
         sendButton.setTitleColor(.white, for: .normal)
         sendButton.layer.cornerRadius = 10
-        sendButton.translatesAutoresizingMaskIntoConstraints = false
         sendButton.addTarget(self, action: #selector(sendTapped), for: .touchUpInside)
-        view.addSubview(sendButton)
+
+        [fromLabel, fromPicker, toLabel, toPicker, amountField, descriptionField, sendButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
 
         NSLayoutConstraint.activate([
-            cardPicker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            cardPicker.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            cardPicker.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            cardPicker.heightAnchor.constraint(equalToConstant: 100),
+            fromLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            fromLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
 
-            balanceLabel.topAnchor.constraint(equalTo: cardPicker.bottomAnchor, constant: 10),
-            balanceLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            fromPicker.topAnchor.constraint(equalTo: fromLabel.bottomAnchor, constant: 8),
+            fromPicker.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            fromPicker.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            fromPicker.heightAnchor.constraint(equalToConstant: 80),
 
-            ibanField.topAnchor.constraint(equalTo: balanceLabel.bottomAnchor, constant: 30),
-            ibanField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            ibanField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            toLabel.topAnchor.constraint(equalTo: fromPicker.bottomAnchor, constant: 20),
+            toLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
 
-            amountField.topAnchor.constraint(equalTo: ibanField.bottomAnchor, constant: 20),
-            amountField.leadingAnchor.constraint(equalTo: ibanField.leadingAnchor),
-            amountField.trailingAnchor.constraint(equalTo: ibanField.trailingAnchor),
+            toPicker.topAnchor.constraint(equalTo: toLabel.bottomAnchor, constant: 8),
+            toPicker.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            toPicker.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            toPicker.heightAnchor.constraint(equalToConstant: 80),
+
+            amountField.topAnchor.constraint(equalTo: toPicker.bottomAnchor, constant: 30),
+            amountField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            amountField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
 
             descriptionField.topAnchor.constraint(equalTo: amountField.bottomAnchor, constant: 20),
-            descriptionField.leadingAnchor.constraint(equalTo: ibanField.leadingAnchor),
-            descriptionField.trailingAnchor.constraint(equalTo: ibanField.trailingAnchor),
+            descriptionField.leadingAnchor.constraint(equalTo: amountField.leadingAnchor),
+            descriptionField.trailingAnchor.constraint(equalTo: amountField.trailingAnchor),
 
             sendButton.topAnchor.constraint(equalTo: descriptionField.bottomAnchor, constant: 40),
             sendButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -88,74 +83,57 @@ class TransferViewController: UIViewController, UIPickerViewDataSource, UIPicker
         ])
     }
 
-    private func updateBalance() {
-        if let card = selectedCard {
-            balanceLabel.text = "Stanje: \(String(format: "%.2f", card.balance))€"
-        }
+    private func makeLabel(_ text: String) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        return label
     }
 
     @objc private func sendTapped() {
-        guard let fromCard = selectedCard,
-              let toIban = ibanField.text, toIban.count == 21,
-              let amountText = amountField.text, let amount = Double(amountText), amount > 0,
-              let description = descriptionField.text, !description.isEmpty else {
-            showAlert("Molimo ispunite sva polja ispravno.")
+        guard let from = fromCard,
+              let to = toCard,
+              let amountText = amountField.text, let amount = Double(amountText),
+              let desc = descriptionField.text, !desc.isEmpty else {
+            showAlert("Molimo ispunite sva polja.")
             return
         }
 
-        guard fromCard.iban != toIban else {
-            showAlert("Ne možete poslati novac samome sebi.")
+        if from.iban == to.iban {
+            showAlert("Odaberite različite kartice.")
             return
         }
 
-        guard amount <= fromCard.balance else {
-            showAlert("Transakcija je prevelika. Provjerite stanje kartice.")
-            return
-        }
-
-        let allCards = DatabaseManager.shared.getUserCards()
-        guard let toCard = allCards.first(where: { $0.iban == toIban }) else {
-            showAlert("Primateljev IBAN nije pronađen.")
+        if amount <= 0 || amount > from.balance {
+            showAlert("Nedovoljno sredstava.")
             return
         }
 
         let now = Date()
 
-        let outgoingTx = Transaction(
-            id: 0,
-            title: "↑↑↑ \(description)",
-            amount: -amount,
-            date: now,
-            cardIban: fromCard.iban
-        )
-        DatabaseManager.shared.addTransaction(outgoingTx)
+        let outgoing = Transaction(id: 0, title: "↑↑↑ \(desc)", amount: -amount, date: now, cardIban: from.iban)
+        let incoming = Transaction(id: 0, title: "↓↓↓ \(desc)", amount: amount, date: now, cardIban: to.iban)
 
-        let incomingTx = Transaction(
-            id: 0,
-            title: "↓↓↓ \(description)",
-            amount: amount,
-            date: now,
-            cardIban: toCard.iban
-        )
-        DatabaseManager.shared.addTransaction(incomingTx)
+        DatabaseManager.shared.addTransaction(outgoing)
+        DatabaseManager.shared.addTransaction(incoming)
 
-        DatabaseManager.shared.updateBalance(for: fromCard.iban, newBalance: fromCard.balance - amount)
-        DatabaseManager.shared.updateBalance(for: toCard.iban, newBalance: toCard.balance + amount)
+        DatabaseManager.shared.updateBalance(for: from.iban, newBalance: from.balance - amount)
+        DatabaseManager.shared.updateBalance(for: to.iban, newBalance: to.balance + amount)
 
-        showAlert("Transakcija uspješna!") {
+        showAlert("Uspješan prijenos.") {
             self.navigationController?.popViewController(animated: true)
         }
     }
 
-    private func showAlert(_ message: String, onDismiss: (() -> Void)? = nil) {
-        let alert = UIAlertController(title: "Info", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "U redu", style: .default) { _ in onDismiss?() })
+    private func showAlert(_ msg: String, onDismiss: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: "Info", message: msg, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in onDismiss?() })
         present(alert, animated: true)
     }
+}
 
-    // MARK: - UIPickerView DataSource & Delegate
-
-    func numberOfComponents(in pickerView: UIPickerView) -> Int { return 1 }
+extension TransferViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int { 1 }
 
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return cards.count
@@ -166,8 +144,11 @@ class TransferViewController: UIViewController, UIPickerViewDataSource, UIPicker
     }
 
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        selectedCard = cards[row]
-        updateBalance()
+        if pickerView == fromPicker {
+            fromCard = cards[row]
+        } else {
+            toCard = cards[row]
+        }
     }
 }
 
