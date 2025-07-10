@@ -42,8 +42,6 @@ class DatabaseManager {
     private let transactionDate = Expression<String>("date")
     private let transactionCardIban = Expression<String>("cardIban")
 
-
-
     // MARK: - Init
     private init() {
         print("📂 Baza spremljena ovdje: \(dbPath)")
@@ -82,7 +80,6 @@ class DatabaseManager {
                 t.column(transactionDate)
                 t.column(transactionCardIban)
             })
-
 
         } catch {
             print("❌ Greška pri kreiranju tablica: \(error)")
@@ -135,6 +132,7 @@ class DatabaseManager {
         return nil
     }
     
+    // MARK: - Transakcije
     func addTransaction(_ transaction: Transaction) {
         let formatter = ISO8601DateFormatter()
         let dateString = formatter.string(from: transaction.date)
@@ -177,9 +175,7 @@ class DatabaseManager {
         return list
     }
 
-
     // MARK: - Kartice
-
     func insertCard(_ card: BankCard) throws {
         guard let currentUserId = getCurrentUserId() else { return }
 
@@ -265,14 +261,29 @@ class DatabaseManager {
         }
     }
     
+    // MARK: - Brisanje kartice i transakcija
     func deleteCard(withIban ibanToDelete: String) {
-        let query = cards.filter(iban == ibanToDelete)
+        let cardQuery = cards.filter(iban == ibanToDelete)
+        let txQuery = transactions.filter(transactionCardIban == ibanToDelete)
+
         do {
-            try db?.run(query.delete())
-            print("✅ Kartica obrisana.")
+            try db?.run(txQuery.delete())
+            try db?.run(cardQuery.delete())
+            print("✅ Kartica i sve povezane transakcije obrisane.")
         } catch {
-            print("❌ Greška pri brisanju kartice: \(error)")
+            print("❌ Greška pri brisanju kartice i/ili transakcija: \(error)")
+        }
+    }
+    
+    func updateBalance(for iban: String, newBalance: Double) {
+        let cardToUpdate = cards.filter(self.iban == iban)
+        do {
+            try db?.run(cardToUpdate.update(balance <- newBalance))
+            print("✅ Ažuriran saldo kartice \(iban)")
+        } catch {
+            print("❌ Greška pri ažuriranju salda: \(error)")
         }
     }
 
 }
+

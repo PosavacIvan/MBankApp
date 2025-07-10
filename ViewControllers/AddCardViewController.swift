@@ -80,7 +80,7 @@ class AddCardViewController: UIViewController {
         let newCard = BankCard(
             name: name,
             iban: iban,
-            balance: 0.0,
+            balance: 2000.0, // ✅ hardkodirani početni iznos
             color: selectedColor
         )
 

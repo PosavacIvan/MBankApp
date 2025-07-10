@@ -1,5 +1,3 @@
-
-
 import UIKit
 
 class CardView: UIView {
@@ -7,6 +5,7 @@ class CardView: UIView {
     private let nameLabel = UILabel()
     private let ibanLabel = UILabel()
     private let chipView = UIImageView()
+    private let balanceLabel = UILabel() // Dodano za prikaz novca
 
     init(card: BankCard) {
         super.init(frame: .zero)
@@ -50,10 +49,17 @@ class CardView: UIView {
         chipView.tintColor = .white
         chipView.translatesAutoresizingMaskIntoConstraints = false
 
+        // 💰 Balance (stanje)
+        balanceLabel.text = "\(String(format: "%.2f", card.balance)) €"
+        balanceLabel.textColor = .white
+        balanceLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 16, weight: .bold)
+        balanceLabel.translatesAutoresizingMaskIntoConstraints = false
+
         // ➕ Dodaj sve
         addSubview(nameLabel)
         addSubview(ibanLabel)
         addSubview(chipView)
+        addSubview(balanceLabel)
 
         NSLayoutConstraint.activate([
             nameLabel.topAnchor.constraint(equalTo: topAnchor, constant: 20),
@@ -65,7 +71,10 @@ class CardView: UIView {
             chipView.heightAnchor.constraint(equalToConstant: 20),
 
             ibanLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
-            ibanLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20)
+            ibanLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+
+            balanceLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
+            balanceLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20)
         ])
     }
 }

@@ -1,11 +1,3 @@
-//
-//  TransactionHistoryViewController.swift
-//  MBankApp
-//
-//  Created by Ivan Posavac on 06.07.2025..
-//
-
-
 import UIKit
 
 class TransactionHistoryViewController: UIViewController {
@@ -29,7 +21,37 @@ class TransactionHistoryViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupTableView()
+        setupNavigationBar()  // ✅ ključno za tri točkice
         loadTransactions()
+    }
+
+    private func setupNavigationBar() {
+        let optionsButton = UIBarButtonItem(
+            image: UIImage(systemName: "ellipsis.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(showOptions)
+        )
+        navigationItem.rightBarButtonItem = optionsButton
+    }
+
+    @objc private func showOptions() {
+        let alert = UIAlertController(title: "Opcije kartice", message: nil, preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Obriši karticu", style: .destructive, handler: { _ in
+            self.deleteCard()
+        }))
+        alert.addAction(UIAlertAction(title: "Odustani", style: .cancel))
+
+        if let popover = alert.popoverPresentationController {
+            popover.barButtonItem = navigationItem.rightBarButtonItem
+        }
+
+        present(alert, animated: true)
+    }
+
+    private func deleteCard() {
+        DatabaseManager.shared.deleteCard(withIban: card.iban)
+        navigationController?.popViewController(animated: true)
     }
 
     private func setupTableView() {
@@ -71,3 +93,4 @@ extension TransactionHistoryViewController: UITableViewDataSource {
         return cell
     }
 }
+

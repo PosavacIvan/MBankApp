@@ -61,7 +61,7 @@ class MainTabBarController: UITabBarController {
                     self.presentInCurrentNavController(transferVC)
 
                 case "payment":
-                    let paymentVC = NewPaymentViewController()
+                    let paymentVC = TransferViewController()
                     self.presentInCurrentNavController(paymentVC)
 
                 case "cancel":
