@@ -1,16 +1,17 @@
-//
-//  PaymentViewController.swift
-//  MBankApp
-//
-//  Created by Ivan Posavac on 10.07.2025..
-//
-
 import UIKit
 
 class PaymentViewController: UIViewController {
 
     private let cards = DatabaseManager.shared.getUserCards()
     private var selectedCard: BankCard?
+
+    private let fromCardLabel: UILabel = {
+        let label = UILabel()
+        label.text = "S koje kartice"
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 
     private let cardPicker = UIPickerView()
     private let ibanField = UITextField()
@@ -32,6 +33,7 @@ class PaymentViewController: UIViewController {
     }
 
     private func setupUI() {
+        // Polja
         ibanField.placeholder = "IBAN primatelja"
         ibanField.borderStyle = .roundedRect
         ibanField.autocapitalizationType = .allCharacters
@@ -49,16 +51,27 @@ class PaymentViewController: UIViewController {
         sendButton.layer.cornerRadius = 10
         sendButton.addTarget(self, action: #selector(sendTapped), for: .touchUpInside)
 
-        let stack = UIStackView(arrangedSubviews: [cardPicker, ibanField, amountField, descriptionField, sendButton])
+        // Stack za polja
+        let stack = UIStackView(arrangedSubviews: [
+            fromCardLabel,
+            cardPicker,
+            ibanField,
+            amountField,
+            descriptionField,
+            sendButton
+        ])
         stack.axis = .vertical
-        stack.spacing = 20
+        stack.spacing = 16
         stack.translatesAutoresizingMaskIntoConstraints = false
+
         view.addSubview(stack)
 
         NSLayoutConstraint.activate([
             stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
             stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+
+            cardPicker.heightAnchor.constraint(equalToConstant: 100),
             sendButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
@@ -128,10 +141,12 @@ extension PaymentViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     }
 
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return cards[row].name
+        let card = cards[row]
+        return "\(card.name) ••••\(card.iban.suffix(4))"
     }
 
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         selectedCard = cards[row]
     }
 }
+

@@ -57,11 +57,11 @@ class MainTabBarController: UITabBarController {
                     let addVC = AddCardViewController()
                     self.presentInCurrentNavController(addVC)
                 case "transfer":
-                    let transferVC = TransferViewController()
+                    let transferVC = TransferViewController(transferType: .own)
                     self.presentInCurrentNavController(transferVC)
 
                 case "payment":
-                    let paymentVC = TransferViewController()
+                    let paymentVC = TransferViewController(transferType: .external)
                     self.presentInCurrentNavController(paymentVC)
 
                 case "cancel":

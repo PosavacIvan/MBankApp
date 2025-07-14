@@ -23,6 +23,8 @@ class TransactionHistoryViewController: UIViewController {
         setupTableView()
         setupNavigationBar()  // ✅ ključno za tri točkice
         loadTransactions()
+        tableView.register(TransactionCell.self, forCellReuseIdentifier: "TransactionCell")
+
     }
 
     private func setupNavigationBar() {
@@ -82,14 +84,8 @@ extension TransactionHistoryViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let transaction = transactions[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .short
-
-        cell.textLabel?.numberOfLines = 2
-        cell.textLabel?.text = "\(transaction.title)\n\(formatter.string(from: transaction.date)) - \(String(format: "%.2f", transaction.amount))€"
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TransactionCell", for: indexPath) as! TransactionCell
+        cell.configure(with: transaction)
         return cell
     }
 }
