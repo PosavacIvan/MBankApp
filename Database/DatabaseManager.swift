@@ -231,7 +231,9 @@ class DatabaseManager {
         var result: [Transaction] = []
 
         do {
-            let query = transactions.filter(transactionCardIban == iban)
+            let query = transactions
+                .filter(transactionCardIban == iban)
+                .order(transactionDate.desc)
             for row in try db!.prepare(query) {
                 let parsedDate = ISO8601DateFormatter().date(from: row[transactionDate]) ?? Date()
                 result.append(Transaction(

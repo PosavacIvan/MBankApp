@@ -73,6 +73,10 @@ class TransactionHistoryViewController: UIViewController {
 
     private func loadTransactions() {
         transactions = DatabaseManager.shared.getTransactions(forIban: card.iban)
+
+        // OVDE DODAJ!
+        transactions.sort { $0.date > $1.date }
+
         tableView.reloadData()
     }
 }
